@@ -1,61 +1,53 @@
-import cv2 as cv
+import math
 
-color_tracker_window = "Color Tracker"
 
-class ColorTracker:
-
+class EuclideanDistTracker:
     def __init__(self):
-        cv.NamedWindow( color_tracker_window, 1 )
-        self.capture = cv.CaptureFromCAM(0)
+        # Store the center positions of the objects
+        self.center_points = {}
+        # Keep the count of the IDs
+        # each time a new object id detected, the count will increase by one
+        self.id_count = 0
 
-    def run(self):
-        while True:
-            img = cv.QueryFrame( self.capture )
 
-            #blur the source image to reduce color noise
-            cv.Smooth(img, img, cv.CV_BLUR, 3);
+    def update(self, objects_rect):
+        # Objects boxes and ids
+        objects_bbs_ids = []
 
-            #convert the image to hsv(Hue, Saturation, Value) so its
-            #easier to determine the color to track(hue)
-            hsv_img = cv.CreateImage(cv.GetSize(img), 8, 3)
-            cv.CvtColor(img, hsv_img, cv.CV_BGR2HSV)
+        # Get center point of new object
+        for rect in objects_rect:
+            x, y, w, h = rect
+            cx = (x + x + w) // 2
+            cy = (y + y + h) // 2
 
-            #limit all pixels that don't match our criteria, in this case we are
-            #looking for purple but if you want you can adjust the first value in
-            #both turples which is the hue range(120,140).  OpenCV uses 0-180 as
-            #a hue range for the HSV color model
-            thresholded_img =  cv.CreateImage(cv.GetSize(hsv_img), 8, 1)
-            cv.InRangeS(hsv_img, (120, 80, 80), (140, 255, 255), thresholded_img)
+            # Find out if that object was detected already
+            same_object_detected = False
+            for id, pt in self.center_points.items():
+                dist = math.hypot(cx - pt[0], cy - pt[1])
 
-            #determine the objects moments and check that the area is large
-            #enough to be our object
-            moments = cv.Moments(thresholded_img, 0)
-            area = cv.GetCentralMoment(moments, 0, 0)
+                if dist < 25:
+                    self.center_points[id] = (cx, cy)
+                    print(self.center_points)
+                    objects_bbs_ids.append([x, y, w, h, id])
+                    same_object_detected = True
+                    break
 
-            #there can be noise in the video so ignore objects with small areas
-            if(area > 100000):
-                #determine the x and y coordinates of the center of the object
-                #we are tracking by dividing the 1, 0 and 0, 1 moments by the area
-                x = cv.GetSpatialMoment(moments, 1, 0)/area
-                y = cv.GetSpatialMoment(moments, 0, 1)/area
+            # New object is detected we assign the ID to that object
+            if same_object_detected is False:
+                self.center_points[self.id_count] = (cx, cy)
+                objects_bbs_ids.append([x, y, w, h, self.id_count])
+                self.id_count += 1
 
-                #print 'x\: ' + str(x) + ' y\: ' + str(y) + ' area\: ' + str(area)
+        # Clean the dictionary by center points to remove IDS not used anymore
+        new_center_points = {}
+        for obj_bb_id in objects_bbs_ids:
+            _, _, _, _, object_id = obj_bb_id
+            center = self.center_points[object_id]
+            new_center_points[object_id] = center
 
-                #create an overlay to mark the center of the tracked object
-                overlay = cv.CreateImage(cv.GetSize(img), 8, 3)
+        # Update dictionary with IDs not used removed
+        self.center_points = new_center_points.copy()
+        return objects_bbs_ids
 
-                cv.Circle(overlay, (x, y), 2, (255, 255, 255), 20)
-                cv.Add(img, overlay, img)
-                #add the thresholded image back to the img so we can see what was
-                #left after it was applied
-                cv.Merge(thresholded_img, None, None, None, img)
 
-            #display the image
-            cv.ShowImage(color_tracker_window, img)
 
-            if cv.WaitKey(10) == 27:
-                break
-
-if __name__=="__main__":
-    color_tracker = ColorTracker()
-    color_tracker.run()

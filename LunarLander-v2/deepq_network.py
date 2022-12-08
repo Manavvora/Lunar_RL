@@ -2,12 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-""" 
-1) CNN Network architecture used in the Nature paper
-   The input to the network consists of an image with shape (1, 84, 84)
-2) Linear Mapping Network
-   The input to the network consists of the observation/state vector
-""" 
 class CNN(nn.Module):
 
     def __init__(self, env_actions):

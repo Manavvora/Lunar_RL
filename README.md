@@ -14,11 +14,11 @@ To track the lunar lander and the final path traversed `python main.py`
 
 Simulation            |  Final Trajectory
 :-------------------------:|:-------------------------:
-![random](outputs/random.gif) |  ![random_plot](trajectories/random.png)
-![monte_carlo](outputs/monte_carlo.gif) | ![monte_carlo](trajectories/monte_carlo.png)
-![q_learning](outputs/qlearning.gif) | ![q_learning](trajectories/q_learning.png)
-![sarsa](outputs/sarsa.gif) | ![sarsa](trajectories/sarsa.png)
-![dqn](outputs/dqn.gif) | ![dqn](trajectories/DQN.png)
+![random](outputs/random.gif)*Random policy* |  ![random_plot](trajectories/random.png)
+![monte_carlo](outputs/monte_carlo.gif)*Monte Carlo* | ![monte_carlo](trajectories/monte_carlo.png)
+![q_learning](outputs/qlearning.gif)*QLearning* | ![q_learning](trajectories/q_learning.png)
+![sarsa](outputs/sarsa.gif)*SARSA* | ![sarsa](trajectories/sarsa.png)
+![dqn](outputs/dqn.gif)*DQN* | ![dqn](trajectories/DQN.png)
 
 
 
